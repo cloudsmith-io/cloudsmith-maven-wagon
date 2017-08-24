@@ -1,0 +1,16 @@
+<component-set>
+  <components>
+    <component>
+      <implementation>io.cloudsmith.maven.wagon.CloudsmithWagon</implementation>
+      <instantiation-strategy>per-lookup</instantiation-strategy>
+      <role>org.apache.maven.wagon.Wagon</role>
+      <role-hint>cloudsmith+https</role-hint>
+    </component>
+    <component>
+      <implementation>io.cloudsmith.maven.wagon.CloudsmithWagon</implementation>
+      <instantiation-strategy>per-lookup</instantiation-strategy>
+      <role>org.apache.maven.wagon.Wagon</role>
+      <role-hint>cloudsmith+http</role-hint>
+    </component>
+  </components>
+</component-set>
