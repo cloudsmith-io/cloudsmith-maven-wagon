@@ -200,18 +200,16 @@ The configuration for Gradle use the "old-style" Maven plugin documented in the 
 
 The Cloudsmith Maven Wagon library isn't available on [Maven Central](https://search.maven.org/) yet (but we're working on it).
 
-Until it is, you'll need to add the following configuration to your project `build.gradle` file within `buildscript` and `repositories`:
+Until it is, you'll need to add the following configuration to your project `build.gradle` file within `repositories`:
 
 ```
-buildscript {
-  repositories {
-    maven {
-      name = "Cloudsmith API Releases"
-      url = "https://dl.cloudsmith.io/public/cloudsmith/api/maven"
-    }
-
-    // You might have references to mavenLocal() and mavenCentral() here too
+repositories {
+  maven {
+    name = "Cloudsmith API Releases"
+    url = "https://dl.cloudsmith.io/public/cloudsmith/api/maven"
   }
+
+  // You might have references to mavenLocal() and mavenCentral() here too
 }
 ```
 
