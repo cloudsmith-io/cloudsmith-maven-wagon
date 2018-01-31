@@ -2,6 +2,8 @@
 
 The Cloudsmith [Maven Wagon](http://maven.apache.org/wagon/) provides an integration between Cloudsmith and [Maven](https://maven.apache.org/), [Gradle](https://gradle.org/), [SBT/Scala](https://www.scala-sbt.org/), and more, for automated native/in-tool uploads of your artefacts. The configuration for Maven, Gradle and SBT vary, so please refer to the relevant section for details and examples.
 
+The Cloudsmith Maven Wagon library isn't available on [Maven Central](https://search.maven.org/) yet (but we're working on it). You can access the latest releases for the library on the public [Cloudsmith API libraries repository](https://cloudsmith.io/package/ns/cloudsmith/repos/api/packages/).
+
 
 ## Common
 
