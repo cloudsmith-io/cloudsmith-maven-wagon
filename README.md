@@ -120,13 +120,13 @@ To bring the library into your Maven project, add the following to your project 
       <extension>
         <groupId>io.cloudsmith.maven.wagon</groupId>
         <artifactId>cloudsmith-maven-wagon</artifactId>
-        <version>0.1</version>
+        <version>0.2.0</version>
       </extension>
     </extensions>
   </build>
 ```
 
-*Note:* Check to see if `0.1` is the latest version - This document might be out of date.
+*Note:* Check to see if `0.2.0` is the latest version - This document might be out of date.
 
 #### Upload Repositories
 

@@ -15,7 +15,23 @@ Please ensure code conforms to the [Maven Code Style And Code Conventions](https
 
 ## Releasing
 
-TODO - We need to document the B&R process.
+Use the Maven versions plugin to bump the version:
+
+```shell
+mvn versions:set -DnewVersion=0.2.0
+```
+
+Then deploy the Maven Wagon to Cloudsmith (assumes appropriate `CLOUDSMITH_API_KEY` has been set properly):
+
+```shell
+mvn deploy
+```
+
+Then move the version back to the next snapshot:
+
+```shell
+mvn versions:set -DnewVersion=0.2.1-SNAPSHOT
+```
 
 
 ## Need Help?
