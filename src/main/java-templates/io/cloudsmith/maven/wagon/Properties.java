@@ -8,6 +8,7 @@ public final class Properties {
     private static final Boolean DEBUG = Boolean.parseBoolean(System.getProperty("cloudsmith.debug"));
     private static final String  GROUP_ID = "${project.groupId}";
     private static final String  VERSION = "${project.version}";
+    private static final String  URL = "${project.url}";
 
     public static String getApiVersion() {
         return API_VERSION;
@@ -31,6 +32,10 @@ public final class Properties {
 
     public static Boolean isDebug() {
         return DEBUG;
+    }
+
+    public static String getUrl() {
+        return URL;
     }
 
     private Properties() {

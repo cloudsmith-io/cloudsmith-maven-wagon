@@ -57,8 +57,20 @@ public class CloudsmithWagon extends AbstractWagon {
 
     private static final String METADATA_XML = "maven-metadata.xml";
 
-    private static final MediaType MEDIA_TYPE_JAR  = MediaType.parse("application/java-archive");
-    private static final MediaType MEDIA_TYPE_POM  = MediaType.parse("application/xml");
+    private static final MediaType MEDIA_TYPE_JAR    = MediaType.parse("application/java-archive");
+    private static final MediaType MEDIA_TYPE_X_JAR  = MediaType.parse("application/x-java-archive");
+    private static final MediaType MEDIA_TYPE_X_EAR  = MediaType.parse("application/x-ear");
+    private static final MediaType MEDIA_TYPE_X_WAR  = MediaType.parse("application/x-war");
+    private static final MediaType MEDIA_TYPE_X_AAR  = MediaType.parse("application/x-aar");
+    private static final MediaType MEDIA_TYPE_ZIP    = MediaType.parse("application/zip");
+    private static final MediaType[] MEDIA_TYPE_JAR_LIKES = new MediaType[]{
+        MEDIA_TYPE_JAR, MEDIA_TYPE_X_JAR, MEDIA_TYPE_X_EAR, MEDIA_TYPE_X_WAR,
+        MEDIA_TYPE_X_AAR, MEDIA_TYPE_ZIP
+    };
+    private static final MediaType MEDIA_TYPE_XML  = MediaType.parse("application/xml");
+    private static final MediaType[] MEDIA_TYPE_POM_LIKES = new MediaType[]{
+        MEDIA_TYPE_XML
+    };
     private static final Integer PACKAGE_SYNC_WAIT = 5000;
     private static final Tika TIKA = new Tika();
 
@@ -330,6 +342,9 @@ public class CloudsmithWagon extends AbstractWagon {
         }
 
         if (this.packageParams.getPackageFile() == null) {
+            logError(
+                "Could not find a package to upload - This is probably our "
+                + "fault, please log an issue at:", Properties.getUrl());
             return;
         }
 
@@ -411,7 +426,10 @@ public class CloudsmithWagon extends AbstractWagon {
         String sourceName = getPathFilename(source.getName());
 
         if (sourceName != null) {
-            if (mediaType.equals(CloudsmithWagon.MEDIA_TYPE_JAR)) {
+            if (isFilePomLike(mediaType, filename)) {
+                // The package POM
+                fileType = FileType.POM;
+            } else if (isFileJarLike(mediaType, filename)) {
                 // The package, javadoc, sources or tests Java archive
                 if (sourceName.contains("-javadoc.")) {
                     fileType = FileType.DOC;
@@ -420,14 +438,50 @@ public class CloudsmithWagon extends AbstractWagon {
                 } else {
                     fileType = FileType.PKG;
                 }
-            } else if (mediaType.equals(CloudsmithWagon.MEDIA_TYPE_POM)
-                       && filename.endsWith(".pom")) {
-                // The package POM
-                fileType = FileType.POM;
             }
         }
 
         return fileType;
+    }
+
+    /**
+     * Check if a file is a JAR-like type.
+     */
+    private boolean isFileJarLike(MediaType mediaType, String filename) {
+        for (MediaType jarMediaType : MEDIA_TYPE_JAR_LIKES) {
+            if (mediaType.equals(jarMediaType)) {
+                return true;
+            }
+        }
+
+        String extension = getFileExtension(filename);
+        return (extension != null && extension.toLowerCase().endsWith("ar"));
+    }
+
+    /**
+     * Check if a file is a POM-like type.
+     */
+    private boolean isFilePomLike(MediaType mediaType, String filename) {
+        for (MediaType pomMediaType : MEDIA_TYPE_POM_LIKES) {
+            if (mediaType.equals(pomMediaType)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get the file extension for a filename.
+     */
+    private String getFileExtension(String filename) {
+        int k = filename.lastIndexOf('.');
+
+        if (k > 0) {
+            return filename.substring(k + 1);
+        } else {
+            return null;
+        }
     }
 
     /**

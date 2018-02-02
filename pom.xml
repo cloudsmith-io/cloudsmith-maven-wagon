@@ -196,7 +196,7 @@
   <repositories>
     <repository>
       <id>cloudsmith-api</id>
-      <url>https://dl.cloudsmith.io/public/cloudsmith/api/maven/</url>
+      <url>https://dl.cloudsmith.io/public/cloudsmith/api/maven</url>
       <releases>
         <enabled>true</enabled>
       </releases>
@@ -205,6 +205,19 @@
       </snapshots>
     </repository>
   </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>cloudsmith-api</id>
+      <url>https://dl.cloudsmith.io/public/cloudsmith/api/maven</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
 
   <dependencies>
     <dependency>
