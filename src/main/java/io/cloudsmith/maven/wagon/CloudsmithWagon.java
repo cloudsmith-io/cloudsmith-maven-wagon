@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 import java.util.Map.Entry;
 
 import io.cloudsmith.api.ApiClient;
@@ -71,8 +72,11 @@ public class CloudsmithWagon extends AbstractWagon {
     private static final MediaType[] MEDIA_TYPE_POM_LIKES = new MediaType[]{
         MEDIA_TYPE_XML
     };
-    private static final Integer PACKAGE_SYNC_WAIT = 5000;
     private static final Tika TIKA = new Tika();
+
+    private static final boolean DEFAULT_SYNC_WAIT_ENABLED         = true;
+    private static final boolean DEFAULT_SYNC_WAIT_VERBOSE_ENABLED = true;
+    private static final int     DEFAULT_SYNC_WAIT_INTERVAL        = 5000;
 
     private String               cdnUrl     = "";
     private CloudsmithRepository repository = null;
@@ -367,37 +371,54 @@ public class CloudsmithWagon extends AbstractWagon {
             throw new TransferFailedException("Could not create package: ", ex);
         }
 
-        try {
-            PackageStatus status = null;
-            do {
-                // TODO(ls): Make this configurable
-                if (status != null) {
-                    try {
-                        Thread.sleep(PACKAGE_SYNC_WAIT);
-                    } catch (InterruptedException ex) {
+        boolean syncWaitEnabled = getSyncWaitEnabled();
+        boolean syncWaitVerboseEnabled = getSyncWaitVerboseEnabled();
+        int syncWaitInterval = getSyncWaitInterval();
+
+        if (syncWaitEnabled && syncWaitInterval > 0) {
+            if (syncWaitVerboseEnabled) {
+                logInfo("Waiting for the package to synchronise ...");
+            }
+
+            try {
+                PackageStatus status = null;
+
+                do {
+                    if (status != null) {
+                        try {
+                            Thread.sleep(syncWaitInterval);
+                        } catch (InterruptedException ex) {
+                        }
                     }
-                }
 
-                status =
-                    packagesApi.packagesStatus(
-                        csmRepository.getOwnerName(),
-                        csmRepository.getRepositoryName(),
-                        packageData.getSlug()
-                    );
-                logDebug(
-                    "finalisePackage",
-                    "\n  Status   =", status.getStatusStr(),
-                    "\n  Stage    =", status.getStageStr(),
-                    "\n  Progress =",
-                        Integer.toString(status.getSyncProgress())
+                    status =
+                        packagesApi.packagesStatus(
+                            csmRepository.getOwnerName(),
+                            csmRepository.getRepositoryName(),
+                            packageData.getSlug()
+                        );
+
+                    if (syncWaitVerboseEnabled) {
+                        logInfo(
+                            "Status =", status.getStatusStr(),
+                            ", Stage =", status.getStageStr(),
+                            ", Progress =", Integer.toString(status.getSyncProgress())
+                        );
+                    }
+                } while (!status.getIsSyncCompleted()
+                         && !status.getIsSyncFailed());
+            } catch (ApiException ex) {
+                setUploadFailed(true);
+                logError("Could not wait for package:", ex.getResponseBody());
+                throw new TransferFailedException("Could not wait for package:", ex);
+            }
+        } else {
+            if (syncWaitVerboseEnabled) {
+                logInfo(
+                    "Not waiting on the package to synchronise (note: "
+                    + "synchronisation failures won't be reported here)"
                 );
-
-            } while (!status.getIsSyncCompleted()
-                     && !status.getIsSyncFailed());
-        } catch (ApiException ex) {
-            setUploadFailed(true);
-            logError("Could not wait for package:", ex.getResponseBody());
-            throw new TransferFailedException("Could not wait for package:", ex);
+            }
         }
 
         logInfo(
@@ -455,7 +476,7 @@ public class CloudsmithWagon extends AbstractWagon {
         }
 
         String extension = getFileExtension(filename);
-        return (extension != null && extension.toLowerCase().endsWith("ar"));
+        return (extension != null && extension.toLowerCase(Locale.ROOT).endsWith("ar"));
     }
 
     /**
@@ -662,19 +683,84 @@ public class CloudsmithWagon extends AbstractWagon {
      * Get the configured Cloudsmith API Key.
      */
     private String getApiKey() {
-        String apiKey;
+        String value;
 
-        apiKey = System.getProperty("cloudsmith.api_key");
-        if (apiKey != null && !apiKey.isEmpty()) {
-            return apiKey;
+        value = System.getProperty("cloudsmith.api_key");
+        if (value != null && !value.isEmpty()) {
+            return value;
         }
 
-        apiKey = System.getenv("CLOUDSMITH_API_KEY");
-        if (apiKey != null && !apiKey.isEmpty()) {
-            return apiKey;
+        value = System.getenv("CLOUDSMITH_API_KEY");
+        if (value != null && !value.isEmpty()) {
+            return value;
         }
 
         return getAuthenticationInfo().getPassword();
+    }
+
+    /**
+     * Determine if package sync waiting is enabled.
+     */
+    private boolean getSyncWaitEnabled() {
+        String value;
+
+        value = System.getProperty("cloudsmith.sync_wait_enabled");
+        if (value != null && !value.isEmpty()) {
+            return Boolean.parseBoolean(value);
+        }
+
+        value = System.getenv("CLOUDSMITH_SYNC_WAIT_ENABLED");
+        if (value != null && !value.isEmpty()) {
+            return Boolean.parseBoolean(value);
+        }
+
+        return DEFAULT_SYNC_WAIT_ENABLED;
+    }
+
+    /**
+     * Determine if package sync waiting verbosity is enabled.
+     */
+    private boolean getSyncWaitVerboseEnabled() {
+        String value;
+
+        value = System.getProperty("cloudsmith.sync_wait_verbose_enabled");
+        if (value != null && !value.isEmpty()) {
+            return Boolean.parseBoolean(value);
+        }
+
+        value = System.getenv("CLOUDSMITH_SYNC_WAIT_VERBOSE_ENABLED");
+        if (value != null && !value.isEmpty()) {
+            return Boolean.parseBoolean(value);
+        }
+
+        return DEFAULT_SYNC_WAIT_VERBOSE_ENABLED;
+    }
+
+    /**
+     * Get the package sync wait interval.
+     */
+    private int getSyncWaitInterval() {
+        String value;
+
+        try {
+            value = System.getProperty("cloudsmith.sync_wait_interval");
+            if (value != null && !value.isEmpty()) {
+                return Integer.parseInt(value);
+            }
+        } catch (NumberFormatException ex) {
+            /* Absorb */
+        }
+
+        try {
+            value = System.getenv("CLOUDSMITH_SYNC_WAIT_INTERVAL");
+            if (value != null && !value.isEmpty()) {
+                return Integer.parseInt(value);
+            }
+        } catch (NumberFormatException ex) {
+            /* Absorb */
+        }
+
+        return DEFAULT_SYNC_WAIT_INTERVAL;
     }
 
     /**

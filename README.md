@@ -15,7 +15,7 @@ In order for the library to communicate with Cloudsmith, you'll need to obtain y
 
 For convenience you can fetch this using the [Cloudsmith CLI](https://github.com/cloudsmith-io/cloudsmith-cli):
 
-```
+```shell
 pip install cloudsmith-cli
 cloudsmith token
 ```
@@ -23,6 +23,59 @@ cloudsmith token
 You can also get it via the [User API Tokens on the Cloudsmith Website](https://cloudsmith.io/settings/api-tokens/) (requires sign-in).
 
 *Note:* If you're automating upload via a CI/CD system, we recommend creating a least-privilege bot user for this task.
+
+### Synchronisation Wait
+
+Packages that are uploaded to Cloudsmith are "eventually consistent" - By this we mean that a package that is uploaded isn't instantaneous made available (published) to users of the target repository. This is due to Cloudsmith using background workers to process packages after they are uploaded, and after a small back-off period these will begin to process packages as they are uploaded.
+
+For this reason, when a package is uploaded, by default the library will initiate a mechanism to wait on the status of the uploaded package until synchronisation is complete (or has failed).
+
+The following is an example of what this looks like when package synchronisation is enabled:
+
+```shell
+[INFO] Creating a new Maven Package ...
+[INFO] Waiting for the package to synchronise ...
+[INFO] Status = Sync In Progress , Stage = Preparing for Synch , Progress = 15
+[INFO] Status = Sync In Progress , Stage = Verifying Package File(s) , Progress = 35
+[INFO] Status = Sync In Progress , Stage = Verifying Package File(s) , Progress = 35
+[INFO] Status = Sync In Progress , Stage = Verifying Package File(s) , Progress = 35
+[INFO] Status = Sync In Progress , Stage = Verifying Package File(s) , Progress = 35
+[INFO] Status = Sync In Progress , Stage = Indexing Package File(s) , Progress = 65
+[INFO] Status = Sync In Progress , Stage = Synching Repository , Progress = 85
+[INFO] Status = Sync Completed , Stage = Fully Synchronised , Progress = 100
+[INFO] Created: cloudsmith/examples/cloudsmith-maven-example-001-snapshotjar-2
+```
+
+#### Synchronisation Wait Configuration
+
+By default synchronisation is enabled. If you'd prefer to not wait for package synchronisation, with the caveat that you'll not be able to tell if the synchronisation process succeeds or not, you can disable it in on the following ways:
+
+1. Set the `cloudsmith.sync_wait_enabled` property to `false`.
+2. Set the `CLOUDSMITH_SYNC_WAIT_ENABLED` environment variable to `false`.
+
+If synchronisation wait is disabled, then the above example output will instead be something like:
+
+```shell
+[INFO] Creating a new Maven package ...
+[INFO] Not waiting on the package to synchronise (note: failures won't be reported here)
+[INFO] Created: cloudsmith/examples/cloudsmith-maven-example-001-snapshotjar-3
+```
+
+#### Synchronisation Wait Verbosity Configuration
+
+By default synchronisation is verbose. If you'd prefer to turn off details of synchronisation, but still want to wait on the synchronisation to complete or fail (along with a status message if it does), then you turn off verbosity in the following ways:
+
+1. Set the `cloudsmith.sync_wait_verbose_enabled` property to `false`.
+2. Set the `CLOUDSMITH_SYNC_WAIT_VERBOSE_ENABLED` environment variable to `false`.
+
+#### Synchronisation Wait Interval Configuration
+
+By default the synchronisation waits for an interval of 5000ms (5 seconds) between updates. If you'd like to shorten or length this interval, then you can set it in the following ways:
+
+1. Set the `cloudsmith.sync_wait_interval` property to an positive integer value (e.g. `10000` to 10 seconds).
+2. Set the `CLOUDSMITH_SYNC_WAIT_VERBOSE_ENABLED` environment variable to a positive integer value (e.g. `20000` for 20 seconds).
+
+*Note:* If you set it to zero or a negative number, then the synchronisation wait process will be disabled.
 
 
 ## Maven
@@ -35,16 +88,24 @@ You can also get it via the [User API Tokens on the Cloudsmith Website](https://
 
 The Cloudsmith Maven Wagon library isn't available on [Maven Central](https://search.maven.org/) yet (but we're working on it).
 
-Until it is, you'll need to add the following configuration to your project `pom.xml` file within `<repositories>`:
+Until it is, you'll need to add the following configuration to your project `pom.xml`:
 
-```
-<repositories>
-  <repository>
-    <id>cloudsmith-api</id>
-    <name>Cloudsmith API Releases</name>
-    <url>https://dl.cloudsmith.io/public/cloudsmith/api/maven</url>
-  </repository>
-</repositories>
+```xml
+  <pluginRepositories>
+    <pluginRepository>
+      <id>cloudsmith-api</id>
+      <name>Cloudsmith API Releases</name>
+      <url>https://dl.cloudsmith.io/public/cloudsmith/api/maven</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <repositories>
+    <repository>
+      <id>cloudsmith-api</id>
+      <name>Cloudsmith API Releases</name>
+      <url>https://dl.cloudsmith.io/public/cloudsmith/api/maven</url>
+    </repository>
+  </repositories>
 ```
 
 This will allow Maven to fetch it as a build/deploy dependency from Cloudsmith.
@@ -53,7 +114,7 @@ This will allow Maven to fetch it as a build/deploy dependency from Cloudsmith.
 
 To bring the library into your Maven project, add the following to your project `pom.xml` file within `<build>` and `<extensions>`:
 
-```
+```xml
   <build>
     <extensions>
       <extension>
@@ -73,7 +134,7 @@ The upload repositories specify which Cloudsmith repository you'd like to upload
 
 To configure the upload repositories for your project, add the following to your project `pom.xml` file within `<distributionManagement>`:
 
-```
+```xml
   <distributionManagement>
     <snapshotRepository>
       <id>cloudsmith-snapshots</id>
@@ -114,7 +175,7 @@ You can configure the library with your API Key in one of three ways (in order o
 
 You can set the `cloudsmith.api_key` system property with your API Key:
 
-```
+```xml
 <properties>
   <cloudsmith.api_key>your-API-key</cloudsmith.api_key>
 </properties>
@@ -130,7 +191,7 @@ Replacing the following terms with your own configuration:
 
 You can export your API Key using the `CLOUDSMITH_API_KEY` environment variable, such as (Linux example):
 
-```
+```shell
 export CLOUDSMITH_API_KEY=your-API-key
 
 ```
@@ -145,7 +206,7 @@ Replacing the following terms with your own configuration:
 
 You can configure your `$HOME/.m2/settings.xml` file with your Cloudsmith API Key:
 
-```
+```xml
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
@@ -177,7 +238,7 @@ Replacing the following terms with your own configuration:
 
 Assuming you have authentication and configuration setup, as above, you'll be able to publish to Cloudsmith via:
 
-```
+```shell
 mvn deploy
 ```
 
@@ -202,7 +263,7 @@ The Cloudsmith Maven Wagon library isn't available on [Maven Central](https://se
 
 Until it is, you'll need to add the following configuration to your project `build.gradle` file within `repositories`:
 
-```
+```groovy
 repositories {
   maven {
     name = "Cloudsmith API Releases"
@@ -219,7 +280,7 @@ This will allow Gradle to fetch it as a build/deploy dependency from Cloudsmith.
 
 To bring the library into your Gradle project, add the following to your project `build.gradle` file:
 
-```
+```groovy
 apply plugin: 'maven'
 
 configurations {
@@ -239,7 +300,7 @@ The upload repositories specify which Cloudsmith repository you'd like to upload
 
 To configure the upload repositories for your project, add the following to your project `build.gradle` file:
 
-```
+```groovy
 uploadArchives {
    repositories {
      mavenDeployer {
@@ -300,7 +361,7 @@ Replacing the following terms with your own configuration:
 
 You can configure your `gradle.properties` file with your Cloudsmith API Key:
 
-```
+```shell
 cloudsmithApiKey=your-api-key
 ```
 
@@ -312,7 +373,7 @@ Replacing the following terms with your own configuration:
 
 Assuming you have authentication and configuration setup, as above, you'll be able to publish to Cloudsmith via:
 
-```
+```shell
 gradle uploadArchives
 ```
 

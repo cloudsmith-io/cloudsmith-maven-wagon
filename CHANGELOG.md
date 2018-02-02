@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+### Added
+
+- More verbosity for synchronisation wait.
+- Support for disabling synchronisation wait.
+- Support for changing synchronisation wait interval.
+
+### Fixed
+
+- Support for Java archives other than JAR, so EAR/WAR/AAR/etc. will now work.
+
 ## [0.1.0] - 2018-01-31
 
 Phase 1 release (initial release).
