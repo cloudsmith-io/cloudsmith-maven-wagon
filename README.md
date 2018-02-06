@@ -405,7 +405,7 @@ The upload repositories specify which Cloudsmith repository you'd like to upload
 To configure the upload repositories for your project, add the following to your project `build.sbt` file:
 
 ```
-credentials += Credentials(Path.userHome / ".config" / "cloudsmith" / "credentials.ini")
+credentials += Credentials(Path.userHome / ".sbt" / ".credentials")
 aetherWagons := Seq(aether.WagonWrapper("cloudsmith+https", "io.cloudsmith.maven.wagon.CloudsmithWagon"))
 publishTo := {
     Some("cloudsmith+https" at "cloudsmith+https://api.cloudsmith.io/your-namespace/your-repo")
@@ -425,7 +425,7 @@ Please see the common setup above to obtain your API Key for Cloudsmith.
 
 #### Sbt Property
 
-Configure your `credentials.ini` file with the following details:
+Configure your `.credentials` file with the following details:
 
 ```
 realm = cloudsmith
