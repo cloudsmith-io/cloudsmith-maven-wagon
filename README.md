@@ -24,6 +24,7 @@ You can also get it via the [User API Tokens on the Cloudsmith Website](https://
 
 *Note:* If you're automating upload via a CI/CD system, we recommend creating a least-privilege bot user for this task.
 
+
 ### Synchronisation Wait
 
 Packages that are uploaded to Cloudsmith are "eventually consistent" - By this we mean that a package that is uploaded isn't instantaneous made available (published) to users of the target repository. This is due to Cloudsmith using background workers to process packages after they are uploaded, and after a small back-off period these will begin to process packages as they are uploaded.
@@ -79,8 +80,6 @@ By default the synchronisation waits for an interval of 5000ms (5 seconds) betwe
 
 
 ## Maven
-
-### Authentication Configuration
 
 ### Deployment Configuration
 
@@ -158,6 +157,8 @@ Replacing the following terms with your own configuration:
 *Note 2:* You can configure the snapshots and releases repositories to be the same, they do not need to be different.
 
 *Note 3:* You can replace `cloudsmith-snapshots` and `cloudsmith-releases` with your own identifiers.
+
+### Authentication Configuration
 
 #### Cloudsmith API Key
 
@@ -386,9 +387,11 @@ The output of this is uploaded to the publicly available [Cloudsmith examples re
 
 ## Scala/SBT
 
-Cloudsmith uses [sbt-aether-deploy](https://github.com/arktekk/sbt-aether-deploy) to wrap/use this library for publishing within SBT.
+### Deployment Configuration
 
 #### Library Dependency
+
+Cloudsmith uses [sbt-aether-deploy](https://github.com/arktekk/sbt-aether-deploy) to wrap/use this library for publishing within SBT.
 
 To bring the library into your Sbt project, add the following to your project `project/plugins.sbt` file:
 
@@ -400,6 +403,7 @@ resolvers += Resolver.mavenLocal
 *Note:* They have removed the WagonWrapper functionality (we think temporarily) from 0.21.0 of aether-deploy so use 0.20.0 - it is supported and available from maven central and our cloudsmith/api public repository.
 
 #### Upload Repositories
+
 The upload repositories specify which Cloudsmith repository you'd like to upload your artefacts to.
 
 To configure the upload repositories for your project, add the following to your project `build.sbt` file:
