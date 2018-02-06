@@ -386,7 +386,65 @@ The output of this is uploaded to the publicly available [Cloudsmith examples re
 
 ## Scala/SBT
 
-Details coming soon, but you can use [sbt-aether-deploy](https://github.com/arktekk/sbt-aether-deploy) to wrap/use this library for publishing within SBT.
+Cloudsmith uses [sbt-aether-deploy](https://github.com/arktekk/sbt-aether-deploy) to wrap/use this library for publishing within SBT.
+
+#### Library Dependency
+
+To bring the library into your Sbt project, add the following to your project `project/plugins.sbt` file:
+
+```
+addSbtPlugin("no.arktekk.sbt" % "aether-deploy" % "0.20.0")
+libraryDependencies += "io.cloudsmith.maven.wagon" % "cloudsmith-maven-wagon" % "0.2.0" 
+resolvers += Resolver.mavenLocal
+```
+*Note:* They have removed the WagonWrapper functionality (we think temporarily) from 0.21.0 of aether-deploy so use 0.20.0 - it is supported and available from maven central and our cloudsmith/api public repository.
+
+#### Upload Repositories
+The upload repositories specify which Cloudsmith repository you'd like to upload your artefacts to.
+
+To configure the upload repositories for your project, add the following to your project `build.sbt` file:
+
+```
+credentials += Credentials(Path.userHome / ".config" / "cloudsmith" / "credentials.ini")
+aetherWagons := Seq(aether.WagonWrapper("cloudsmith+https", "io.cloudsmith.maven.wagon.CloudsmithWagon"))
+publishTo := {
+    Some("cloudsmith+https" at "cloudsmith+https://api.cloudsmith.io/your-namespace/your-repo")
+}
+```
+Replacing the following terms with your own configuration:
+- `your-namespace`: Replace with your user or organization slug.
+- `your-repo`: Replace with your repository slug.
+
+*Note:* The repositories must exist prior to deployment - Create them first!
+
+### Authentication Configuration
+
+#### Cloudsmith API Key
+
+Please see the common setup above to obtain your API Key for Cloudsmith.
+
+#### Sbt Property
+
+Configure your `credentials.ini` file with the following details:
+
+```
+realm = cloudsmith
+host = api.cloudsmith.io
+user = 
+password = your-api-key
+```
+
+### Usage
+Assuming you have authentication and configuration setup, as above, you'll be able to publish to Cloudsmith via:
+
+```
+sbt aetherDeploy
+```
+
+### Example Project
+We have a fully-worked [example project for Sbt](https://github.com/cloudsmith-io/cloudsmith-examples/tree/master/projects/sbt/src) that you can use as a reference.
+
+The output of this is uploaded to the publicly available [Cloudsmith examples repository](https://cloudsmith.io/package/ns/cloudsmith/repos/examples/packages/) as part of our testing processes.
 
 
 ## Kotlin/Kobalt
