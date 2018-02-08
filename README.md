@@ -364,7 +364,7 @@ Replacing the following terms with your own configuration:
 You can configure your `gradle.properties` file with your Cloudsmith API Key:
 
 ```shell
-cloudsmithApiKey=your-api-key
+cloudsmithApiKey=your-API-key
 ```
 
 Replacing the following terms with your own configuration:
@@ -394,7 +394,7 @@ The output of this is uploaded to the publicly available [Cloudsmith examples re
 
 Cloudsmith uses [sbt-aether-deploy](https://github.com/arktekk/sbt-aether-deploy) to wrap/use this library for publishing within SBT.
 
-To bring the library into your Sbt project, add the following to your project `project/plugins.sbt` file:
+To bring the library into your SBT project, add the following to your project `project/plugins.sbt` file:
 
 ```
 addSbtPlugin("no.arktekk.sbt" % "aether-deploy" % "0.20.0")
@@ -440,8 +440,12 @@ Configure your `.credentials` file with the following details:
 realm = cloudsmith
 host = api.cloudsmith.io
 user =
-password = your-api-key
+password = your-API-key
 ```
+
+Replacing the following terms with your own configuration:
+
+- `your-API-key`: Your Cloudsmith user API key (see above for how to retrieve it).
 
 ### Usage
 Assuming you have authentication and configuration setup, as above, you'll be able to publish to Cloudsmith via:
@@ -451,9 +455,15 @@ sbt aetherDeploy
 ```
 
 ### Example Project
-We have a fully-worked [example project for Sbt](https://github.com/cloudsmith-io/cloudsmith-examples/tree/master/projects/sbt/src) that you can use as a reference.
+
+We have a fully-worked [example project for SBT](https://github.com/cloudsmith-io/cloudsmith-examples/tree/master/projects/sbt/src) that you can use as a reference.
 
 The output of this is uploaded to the publicly available [Cloudsmith examples repository](https://cloudsmith.io/package/ns/cloudsmith/repos/examples/packages/) as part of our testing processes.
+
+
+## Leiningen
+
+Details coming soon.
 
 
 ## Kotlin/Kobalt
