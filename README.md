@@ -166,7 +166,7 @@ Please see the common setup above to obtain your API Key for Cloudsmith.
 
 #### Precedence
 
-You can configure the library with your API Key in one of three ways (in order of precedence):
+You can configure the library with your API Key in one of following ways (in order of precedence):
 
 1. System Property
 2. Environment Variable
@@ -339,7 +339,7 @@ Please see the common setup above to obtain your API Key for Cloudsmith.
 
 #### Precedence
 
-You can configure the library with your API Key in one of three ways (in order of precedence):
+You can configure the library with your API Key in one of the following ways (in order of precedence):
 
 1. Environment Variable
 2. Gradle Property
