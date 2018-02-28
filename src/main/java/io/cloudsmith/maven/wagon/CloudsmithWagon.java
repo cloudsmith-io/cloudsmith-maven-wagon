@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 import java.util.Locale;
 import java.util.Map.Entry;
 
@@ -73,10 +74,6 @@ public class CloudsmithWagon extends AbstractWagon {
         MEDIA_TYPE_XML
     };
     private static final Tika TIKA = new Tika();
-
-    private static final boolean DEFAULT_SYNC_WAIT_ENABLED         = true;
-    private static final boolean DEFAULT_SYNC_WAIT_VERBOSE_ENABLED = true;
-    private static final int     DEFAULT_SYNC_WAIT_INTERVAL        = 5000;
 
     private String               cdnUrl     = "";
     private CloudsmithRepository repository = null;
@@ -144,7 +141,7 @@ public class CloudsmithWagon extends AbstractWagon {
             .get()
             .build();
 
-        OkHttpClient httpclient = new OkHttpClient();
+        OkHttpClient httpclient = getHttpClient();
 
         fireGetStarted(resource, destination);
         Response response = null;
@@ -306,7 +303,7 @@ public class CloudsmithWagon extends AbstractWagon {
                 .post(requestBody)
                 .build();
 
-        OkHttpClient httpclient = new OkHttpClient();
+        OkHttpClient httpclient = getHttpClient();
 
         firePutStarted(resource, source);
         Response response = null;
@@ -371,9 +368,9 @@ public class CloudsmithWagon extends AbstractWagon {
             throw new TransferFailedException("Could not create package: ", ex);
         }
 
-        boolean syncWaitEnabled = getSyncWaitEnabled();
-        boolean syncWaitVerboseEnabled = getSyncWaitVerboseEnabled();
-        int syncWaitInterval = getSyncWaitInterval();
+        boolean syncWaitEnabled = Properties.isSyncWaitEnabled();
+        boolean syncWaitVerboseEnabled = Properties.isSyncWaitVerbose();
+        int syncWaitInterval = Properties.getSyncWaitInterval();
 
         if (syncWaitEnabled && syncWaitInterval > 0) {
             if (syncWaitVerboseEnabled) {
@@ -515,6 +512,18 @@ public class CloudsmithWagon extends AbstractWagon {
         return resource;
     }
 
+
+    /**
+     * Create a new HTTP client.
+     */
+    OkHttpClient getHttpClient() {
+        return new OkHttpClient.Builder()
+            .connectTimeout(Properties.getHttpConnectTimeout(), TimeUnit.SECONDS)
+            .readTimeout(Properties.getHttpReadTimeout(), TimeUnit.SECONDS)
+            .writeTimeout(Properties.getHttpWriteTimeout(), TimeUnit.SECONDS)
+            .build();
+    }
+
     /**
      * Log error.
      */
@@ -568,7 +577,7 @@ public class CloudsmithWagon extends AbstractWagon {
         this.client = Configuration.getDefaultApiClient();
         this.client.setDebugging(Properties.isDebug());
         this.client.setBasePath(csmRepository.getApiUrl());
-        this.client.setApiKey(getApiKey());
+        this.client.setApiKey(Properties.getApiKey(getAuthenticationInfo().getPassword()));
         this.client.setUserAgent(
             String.format(
                 "cloudsmith-maven-wagon/%s wagon:%s api:%s",
@@ -677,90 +686,6 @@ public class CloudsmithWagon extends AbstractWagon {
      */
     private MediaType getFileMediaType(File file) throws IOException {
         return MediaType.parse(TIKA.detect(file));
-    }
-
-    /**
-     * Get the configured Cloudsmith API Key.
-     */
-    private String getApiKey() {
-        String value;
-
-        value = System.getProperty("cloudsmith.api_key");
-        if (value != null && !value.isEmpty()) {
-            return value;
-        }
-
-        value = System.getenv("CLOUDSMITH_API_KEY");
-        if (value != null && !value.isEmpty()) {
-            return value;
-        }
-
-        return getAuthenticationInfo().getPassword();
-    }
-
-    /**
-     * Determine if package sync waiting is enabled.
-     */
-    private boolean getSyncWaitEnabled() {
-        String value;
-
-        value = System.getProperty("cloudsmith.sync_wait_enabled");
-        if (value != null && !value.isEmpty()) {
-            return Boolean.parseBoolean(value);
-        }
-
-        value = System.getenv("CLOUDSMITH_SYNC_WAIT_ENABLED");
-        if (value != null && !value.isEmpty()) {
-            return Boolean.parseBoolean(value);
-        }
-
-        return DEFAULT_SYNC_WAIT_ENABLED;
-    }
-
-    /**
-     * Determine if package sync waiting verbosity is enabled.
-     */
-    private boolean getSyncWaitVerboseEnabled() {
-        String value;
-
-        value = System.getProperty("cloudsmith.sync_wait_verbose_enabled");
-        if (value != null && !value.isEmpty()) {
-            return Boolean.parseBoolean(value);
-        }
-
-        value = System.getenv("CLOUDSMITH_SYNC_WAIT_VERBOSE_ENABLED");
-        if (value != null && !value.isEmpty()) {
-            return Boolean.parseBoolean(value);
-        }
-
-        return DEFAULT_SYNC_WAIT_VERBOSE_ENABLED;
-    }
-
-    /**
-     * Get the package sync wait interval.
-     */
-    private int getSyncWaitInterval() {
-        String value;
-
-        try {
-            value = System.getProperty("cloudsmith.sync_wait_interval");
-            if (value != null && !value.isEmpty()) {
-                return Integer.parseInt(value);
-            }
-        } catch (NumberFormatException ex) {
-            /* Absorb */
-        }
-
-        try {
-            value = System.getenv("CLOUDSMITH_SYNC_WAIT_INTERVAL");
-            if (value != null && !value.isEmpty()) {
-                return Integer.parseInt(value);
-            }
-        } catch (NumberFormatException ex) {
-            /* Absorb */
-        }
-
-        return DEFAULT_SYNC_WAIT_INTERVAL;
     }
 
     /**

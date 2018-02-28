@@ -1,8 +1,38 @@
 # Cloudsmith Maven Wagon
 
-The Cloudsmith [Maven Wagon](http://maven.apache.org/wagon/) provides an integration between Cloudsmith and [Maven](https://maven.apache.org/), [Gradle](https://gradle.org/), [SBT/Scala](https://www.scala-sbt.org/), and more, for automated native/in-tool uploads of your artefacts. The configuration for Maven, Gradle and SBT vary, so please refer to the relevant section for details and examples.
+The Cloudsmith [Maven Wagon](http://maven.apache.org/wagon/) provides an
+integration between Cloudsmith and [Maven](https://maven.apache.org/),
+[Gradle](https://gradle.org/), [SBT/Scala](https://www.scala-sbt.org/), and
+more, for automated native/in-tool uploads of your artefacts. The configuration
+for Maven, Gradle and SBT vary, so please refer to the relevant section for
+details and examples.
 
-The Cloudsmith Maven Wagon library isn't available on [Maven Central](https://search.maven.org/) yet (but we're working on it). You can access the latest releases for the library on the public [Cloudsmith API libraries repository](https://cloudsmith.io/package/ns/cloudsmith/repos/api/packages/).
+The Cloudsmith Maven Wagon library isn't available on [Maven Central](https://search.maven.org/)
+yet (but we're working on it). You can access the latest releases for the
+library on the public [Cloudsmith API libraries repository](https://cloudsmith.io/package/ns/cloudsmith/repos/api/packages/).
+
+
+## How Does It Work
+
+The Maven Wagon utilises the [Cloudsmith API](https://api.cloudsmith.io) to push your packages to Cloudsmith.
+
+The flow of this as follows:
+
+1. Maven builds your artefacts (JAR, POM, etc.) using the standard build process.
+2. Maven starts the deploy process by delegating to this library/plugin.
+3. The library authenticates with the Cloudsmith API via HTTPS to check your credentials.
+4. The library asks the Cloudsmith API via HTTPS for existing repository metadata.
+5. The library checks to see if your artefacts are already located in the upstream repository.
+6. Assuming your artefacts are new, the library performs the following for each artefacts:
+  a. It requests upload authorisation from the Cloudsmith API via HTTPS.
+  b. It receives the pre-signed upload request details for uploading the file.
+  c. It uses these to push the artefact to S3 via HTTPS (the actual file upload).
+7. When all artefacts uploaded, the library tells the Cloudsmith API via HTTPS that the uploads are completed.
+8. The library uses the status endpoint of the Cloudsmith API to wait for the package to synchronise.
+9. The library informs Maven of the success or failure of the deployment.
+
+As noted above HTTPS is used to communicate with the Cloudsmith API and S3 - If you encounter issues with
+timeouts, please refer to the HTTP Timeout Configuration below for help.
 
 
 ## Common
@@ -25,11 +55,58 @@ You can also get it via the [User API Tokens on the Cloudsmith Website](https://
 *Note:* If you're automating upload via a CI/CD system, we recommend creating a least-privilege bot user for this task.
 
 
+### Debug Output
+
+If you need help with debugging issues you can enable debug output via (in order of precedence):
+
+1. Set the `CLOUDSMITH_DEBUG` environment variable to `true`.
+2. Set the `cloudsmith.debug` property to `true`.
+
+
+### HTTP Timeouts
+
+The library uses HTTPS to communicate with the Cloudsmith API and S3 to coordinate
+package creation and upload of the package artefacts. This is usually problem-free,
+but if you have an unstable or slow connection you may encounter timeouts during the
+retrieval or upload portions of the deployment workflow. If this happens, you can
+configure larger values for the HTTP timeouts, as below.
+
+#### HTTP Timeout Configuration
+
+The following defaults are used:
+
+- HTTP connect timeout: 15 seconds
+- HTTP read timeout: 30 seconds
+- HTTP write timeout: 120 seconds
+
+Configuring the HTTP connect timeout (in order of precedence):
+
+1. Set the `CLOUDSMITH_HTTP_CONNECT_TIMEOUT` environment variable to a positive integer value (e.g. `30` for 30 seconds).
+2. Set the `cloudsmith.http.connect.timeout` property to a positive integer value (e.g. `60` for 60 seconds).
+
+Configuring the HTTP read timeout (in order of precedence):
+
+1. Set the `CLOUDSMITH_HTTP_READ_TIMEOUT` environment variable to a positive integer value (e.g. `60` for 60 seconds).
+2. Set the `cloudsmith.http.read.timeout` property to a positive integer value (e.g. `120` for 120 seconds).
+
+Configuring the HTTP write timeout (in order of precedence):
+
+1. Set the `CLOUDSMITH_HTTP_WRITE_TIMEOUT` environment variable to a positive integer value (e.g. `240` for 240 seconds).
+2. Set the `cloudsmith.http.write.timeout` property to a positive integer value (e.g. `480` for 480 seconds).
+
+
 ### Synchronisation Wait
 
-Packages that are uploaded to Cloudsmith are "eventually consistent" - By this we mean that a package that is uploaded isn't instantaneous made available (published) to users of the target repository. This is due to Cloudsmith using background workers to process packages after they are uploaded, and after a small back-off period these will begin to process packages as they are uploaded.
+Packages that are uploaded to Cloudsmith are "eventually consistent" - By this
+we mean that a package that is uploaded isn't instantaneous made available
+(published) to users of the target repository. This is due to Cloudsmith using
+background workers to process packages after they are uploaded, and after
+a small back-off period these will begin to process packages as they are
+uploaded.
 
-For this reason, when a package is uploaded, by default the library will initiate a mechanism to wait on the status of the uploaded package until synchronisation is complete (or has failed).
+For this reason, when a package is uploaded, by default the library will
+initiate a mechanism to wait on the status of the uploaded package until
+synchronisation is complete (or has failed).
 
 The following is an example of what this looks like when package synchronisation is enabled:
 
@@ -49,10 +126,13 @@ The following is an example of what this looks like when package synchronisation
 
 #### Synchronisation Wait Configuration
 
-By default synchronisation is enabled. If you'd prefer to not wait for package synchronisation, with the caveat that you'll not be able to tell if the synchronisation process succeeds or not, you can disable it in on the following ways:
+By default synchronisation is enabled. If you'd prefer to not wait for package
+synchronisation, with the caveat that you'll not be able to tell if the
+synchronisation process succeeds or not, you can disable it in on the following
+ways (in order of precedence):
 
-1. Set the `cloudsmith.sync_wait_enabled` property to `false`.
-2. Set the `CLOUDSMITH_SYNC_WAIT_ENABLED` environment variable to `false`.
+1. Set the `CLOUDSMITH_SYNC_WAIT_ENABLED` environment variable to `false`.
+2. Set the `cloudsmith.sync_wait.enabled` property to `false`.
 
 If synchronisation wait is disabled, then the above example output will instead be something like:
 
@@ -64,17 +144,22 @@ If synchronisation wait is disabled, then the above example output will instead 
 
 #### Synchronisation Wait Verbosity Configuration
 
-By default synchronisation is verbose. If you'd prefer to turn off details of synchronisation, but still want to wait on the synchronisation to complete or fail (along with a status message if it does), then you turn off verbosity in the following ways:
+By default synchronisation is verbose. If you'd prefer to turn off details of
+synchronisation, but still want to wait on the synchronisation to complete or
+fail (along with a status message if it does), then you turn off verbosity in
+the following ways (in order of precedence):
 
-1. Set the `cloudsmith.sync_wait_verbose_enabled` property to `false`.
-2. Set the `CLOUDSMITH_SYNC_WAIT_VERBOSE_ENABLED` environment variable to `false`.
+1. Set the `CLOUDSMITH_SYNC_WAIT_VERBOSE` environment variable to `false`.
+2. Set the `cloudsmith.sync_wait.verbose` property to `false`.
 
 #### Synchronisation Wait Interval Configuration
 
-By default the synchronisation waits for an interval of 5000ms (5 seconds) between updates. If you'd like to shorten or length this interval, then you can set it in the following ways:
+By default the synchronisation waits for an interval of 5000ms (5 seconds)
+between updates. If you'd like to shorten or length this interval, then you can
+set it in the following ways (in order of precedence):
 
-1. Set the `cloudsmith.sync_wait_interval` property to an positive integer value (e.g. `10000` to 10 seconds).
-2. Set the `CLOUDSMITH_SYNC_WAIT_VERBOSE_ENABLED` environment variable to a positive integer value (e.g. `20000` for 20 seconds).
+1. Set the `CLOUDSMITH_SYNC_WAIT_INTERVAL` environment variable to a positive integer value (e.g. `20` for 20 seconds).
+1. Set the `cloudsmith.sync_wait.interval` property to an positive integer value (e.g. `10` to 10 seconds).
 
 *Note:* If you set it to zero or a negative number, then the synchronisation wait process will be disabled.
 
