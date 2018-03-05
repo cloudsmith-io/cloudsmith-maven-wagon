@@ -383,7 +383,7 @@ public class CloudsmithWagon extends AbstractWagon {
                 do {
                     if (status != null) {
                         try {
-                            Thread.sleep(syncWaitInterval);
+                            TimeUnit.SECONDS.sleep(syncWaitInterval);
                         } catch (InterruptedException ex) {
                         }
                     }
