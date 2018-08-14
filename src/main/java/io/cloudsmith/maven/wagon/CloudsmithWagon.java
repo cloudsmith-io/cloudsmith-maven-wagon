@@ -81,9 +81,7 @@ public class CloudsmithWagon extends AbstractWagon {
     private ApiClient           client         = null;
     private PackagesUploadMaven packageParams  = null;
 
-    /* Using static here for now because of issues with attached stages running twice. */
-    private static Boolean      uploadFailed   = false;
-    private static Boolean      uploadComplete = false;
+    private Boolean             uploadFailed   = false;
 
     public CloudsmithWagon() {
         super();
@@ -189,13 +187,10 @@ public class CloudsmithWagon extends AbstractWagon {
     public void put(File source, String destination)
             throws TransferFailedException, ResourceDoesNotExistException,
                    AuthorizationException {
-        if (uploadFailed || uploadComplete) {
-            return;
-        }
-
         if (isPathMetadataXml(destination)) {
             /* This should be the last file in a normal upload. */
             finalisePackage();
+            resetState();
             return;
         }
 
@@ -338,14 +333,18 @@ public class CloudsmithWagon extends AbstractWagon {
      * Finalise the uploaded files into a Cloudsmith package.
      */
     private void finalisePackage() throws TransferFailedException {
-        if (uploadFailed || uploadComplete) {
+        if (uploadFailed) {
+            logDebug("finalisePackage", "Upload had failed, skipping finalisation.");
             return;
         }
 
         if (this.packageParams.getPackageFile() == null) {
-            logError(
-                "Could not find a package to upload - This is probably our "
-                + "fault, please log an issue at:", Properties.getUrl());
+            logDebug("finalisePackage", "No package JAR, skipping finalisation.");
+            return;
+        }
+
+        if (this.packageParams.getPomFile() == null) {
+            logDebug("finalisePackage", "No package POM, skipping finalisation.");
             return;
         }
 
@@ -399,7 +398,8 @@ public class CloudsmithWagon extends AbstractWagon {
                         logInfo(
                             "Status =", status.getStatusStr(),
                             ", Stage =", status.getStageStr(),
-                            ", Progress =", Integer.toString(status.getSyncProgress())
+                            ", Progress =", Integer.toString(status.getSyncProgress()),
+                            "%"
                         );
                     }
                 } while (!status.getIsSyncCompleted()
@@ -423,8 +423,6 @@ public class CloudsmithWagon extends AbstractWagon {
             csmRepository.getOwnerName() + "/"
             + csmRepository.getRepositoryName()
             + "/" + packageData.getSlug());
-
-        setUploadComplete(true);
     }
 
     /**
@@ -565,6 +563,7 @@ public class CloudsmithWagon extends AbstractWagon {
      * Reset state for the wagon.
      */
     private void resetState() {
+        this.uploadFailed = false;
         this.packageParams = new PackagesUploadMaven();
     }
 
@@ -691,14 +690,7 @@ public class CloudsmithWagon extends AbstractWagon {
     /**
      * Flag the Wagon operation as failed.
      */
-    private static void setUploadFailed(boolean state) {
-        uploadFailed = state;
-    }
-
-    /**
-     * Flag the Wagon operation as completed.
-     */
-    private static void setUploadComplete(boolean state) {
-        uploadComplete = state;
+    private void setUploadFailed(boolean state) {
+        this.uploadFailed = state;
     }
 }

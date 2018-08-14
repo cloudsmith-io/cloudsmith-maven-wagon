@@ -8,7 +8,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
-No documented changes yet.
+### Added
+
+- Add support for multi-module/sub-project POMs.
 
 
 ## [0.3.1] - 2018-03-05
