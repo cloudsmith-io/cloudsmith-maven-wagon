@@ -204,13 +204,13 @@ To bring the library into your Maven project, add the following to your project 
       <extension>
         <groupId>io.cloudsmith.maven.wagon</groupId>
         <artifactId>cloudsmith-maven-wagon</artifactId>
-        <version>0.3.1</version>
+        <version>0.4.0</version>
       </extension>
     </extensions>
   </build>
 ```
 
-*Note:* Please refer to the [Cloudsmith API libraries repository](https://cloudsmith.io/package/ns/cloudsmith/repos/api/packages/) to replace *0.3.1* with the latest library version.
+*Note:* Please refer to the [Cloudsmith API libraries repository](https://cloudsmith.io/package/ns/cloudsmith/repos/api/packages/) to replace *0.4.0* with the latest library version.
 
 #### Upload Repositories
 
@@ -374,11 +374,11 @@ configurations {
 }
 
 dependencies {
-  deployerJars 'io.cloudsmith.maven.wagon:cloudsmith-maven-wagon:0.3.1'
+  deployerJars 'io.cloudsmith.maven.wagon:cloudsmith-maven-wagon:0.4.0'
 }
 ```
 
-*Note:* Please refer to the [Cloudsmith API libraries repository](https://cloudsmith.io/package/ns/cloudsmith/repos/api/packages/) to replace *0.3.1* with the latest library version.
+*Note:* Please refer to the [Cloudsmith API libraries repository](https://cloudsmith.io/package/ns/cloudsmith/repos/api/packages/) to replace *0.4.0* with the latest library version.
 
 
 #### Upload Repositories
@@ -483,13 +483,13 @@ To bring the library into your SBT project, add the following to your project `p
 
 ```
 addSbtPlugin("no.arktekk.sbt" % "aether-deploy" % "0.20.0")
-libraryDependencies += "io.cloudsmith.maven.wagon" % "cloudsmith-maven-wagon" % "0.3.1"
+libraryDependencies += "io.cloudsmith.maven.wagon" % "cloudsmith-maven-wagon" % "0.4.0"
 resolvers += Resolver.mavenLocal
 ```
 
 *Note1 :* They have removed the WagonWrapper functionality (we think temporarily) from 0.21.0 of aether-deploy so use 0.20.0 - it is supported and available from maven central and our cloudsmith/api public repository.
 
-*Note 2:* Please refer to the [Cloudsmith API libraries repository](https://cloudsmith.io/package/ns/cloudsmith/repos/api/packages/) to replace *0.3.1* with the latest library version.
+*Note 2:* Please refer to the [Cloudsmith API libraries repository](https://cloudsmith.io/package/ns/cloudsmith/repos/api/packages/) to replace *0.4.0* with the latest library version.
 
 
 #### Upload Repositories
