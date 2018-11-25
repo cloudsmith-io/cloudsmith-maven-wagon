@@ -11,7 +11,7 @@ details and examples.
 
 The Cloudsmith Maven Wagon library isn't available on [Maven Central](https://search.maven.org/)
 yet (but we're working on it). You can access the latest releases for the
-library on the public [Cloudsmith API libraries repository](https://cloudsmith.io/package/ns/cloudsmith/repos/api/packages/).
+library on the public [Cloudsmith API libraries repository](https://cloudsmith.io/~cloudsmith/repos/api/packages/).
 
 
 ## How Does It Work
@@ -212,7 +212,7 @@ To bring the library into your Maven project, add the following to your project 
   </build>
 ```
 
-*Note:* Please refer to the [Cloudsmith API libraries repository](https://cloudsmith.io/package/ns/cloudsmith/repos/api/packages/) to replace *0.4.0* with the latest library version.
+*Note:* Please refer to the [Cloudsmith API libraries repository](https://cloudsmith.io/~cloudsmith/repos/api/packages/) to replace *0.4.0* with the latest library version.
 
 #### Upload Repositories
 
@@ -334,7 +334,7 @@ mvn deploy
 
 We have a fully-worked [example project for Maven](https://github.com/cloudsmith-io/cloudsmith-examples/tree/master/projects/maven/src) that you can use as a reference.
 
-The output of this is uploaded to the publicly available [Cloudsmith examples repository](https://cloudsmith.io/package/ns/cloudsmith/repos/examples/packages/) as part of our testing processes.
+The output of this is uploaded to the publicly available [Cloudsmith examples repository](https://cloudsmith.io/~cloudsmith/repos/examples/packages/) as part of our testing processes.
 
 
 ## Gradle
@@ -380,7 +380,7 @@ dependencies {
 }
 ```
 
-*Note:* Please refer to the [Cloudsmith API libraries repository](https://cloudsmith.io/package/ns/cloudsmith/repos/api/packages/) to replace *0.4.0* with the latest library version.
+*Note:* Please refer to the [Cloudsmith API libraries repository](https://cloudsmith.io/~cloudsmith/repos/api/packages/) to replace *0.4.0* with the latest library version.
 
 
 #### Upload Repositories
@@ -491,7 +491,7 @@ resolvers += Resolver.mavenLocal
 
 *Note1 :* They have removed the WagonWrapper functionality (we think temporarily) from 0.21.0 of aether-deploy so use 0.20.0 - it is supported and available from maven central and our cloudsmith/api public repository.
 
-*Note 2:* Please refer to the [Cloudsmith API libraries repository](https://cloudsmith.io/package/ns/cloudsmith/repos/api/packages/) to replace *0.4.0* with the latest library version.
+*Note 2:* Please refer to the [Cloudsmith API libraries repository](https://cloudsmith.io/~cloudsmith/repos/api/packages/) to replace *0.4.0* with the latest library version.
 
 
 #### Upload Repositories
@@ -545,7 +545,7 @@ sbt aetherDeploy
 
 We have a fully-worked [example project for SBT](https://github.com/cloudsmith-io/cloudsmith-examples/tree/master/projects/sbt/src) that you can use as a reference.
 
-The output of this is uploaded to the publicly available [Cloudsmith examples repository](https://cloudsmith.io/package/ns/cloudsmith/repos/examples/packages/) as part of our testing processes.
+The output of this is uploaded to the publicly available [Cloudsmith examples repository](https://cloudsmith.io/~cloudsmith/repos/examples/packages/) as part of our testing processes.
 
 
 ## Leiningen
