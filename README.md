@@ -1,5 +1,7 @@
 # Cloudsmith Maven Wagon
 
+[![Latest Version @ Cloudsmith](https://api-prd.cloudsmith.io/badges/version/cloudsmith/api/maven/cloudsmith-maven-wagon/latest/x/?render=true)](https://cloudsmith.io/~cloudsmith/repos/api/packages/detail/maven/cloudsmith-maven-wagon/latest/)
+
 The Cloudsmith [Maven Wagon](http://maven.apache.org/wagon/) provides an
 integration between Cloudsmith and [Maven](https://maven.apache.org/),
 [Gradle](https://gradle.org/), [SBT/Scala](https://www.scala-sbt.org/), and
