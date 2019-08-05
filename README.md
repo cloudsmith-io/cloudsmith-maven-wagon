@@ -1,3 +1,8 @@
+# **DEPRECATED**
+The Cloudsmith Maven Wagon is no longer needed for publishing. Please use the native-based publishing instead (see image below), which is better supported across different technologies. It also supports POM-only and sub-module uploads. Cloudsmith will continue to maintain this library for users that are currently using it or for legacy reasons (e.g. old versions of tooling that don't support native uploading). Otherwise, please consider upgrading now.
+
+![Native Maven Publishing](https://user-images.githubusercontent.com/2248287/62480275-4796d700-b7a7-11e9-82d9-c6e893e336c8.png)
+
 # Cloudsmith Maven Wagon
 
 [![Latest Version @ Cloudsmith](https://api-prd.cloudsmith.io/badges/version/cloudsmith/api/maven/cloudsmith-maven-wagon/latest/x/?render=true)](https://cloudsmith.io/~cloudsmith/repos/api/packages/detail/maven/cloudsmith-maven-wagon/latest/)
